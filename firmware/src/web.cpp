@@ -1,11 +1,14 @@
 #include <ESP8266WebServer.h>
 #include <Arduino.h>
 #include"webdata.h"
+#include <cstdlib> // atoi需要该头文件
+#include "eeprom_flash.h"
 
+extern SYS_CONFIG_T g_sys_cfg;
+static SYS_CONFIG_T s_sys_cfg_tmp = {0};
 ESP8266WebServer server(80);//开启板子的80端口
 // 存储表单提交的数据（示例：6个输入框的数据）
 String inputData[8] = {"", "", "", "", "", "", "", ""};
-
 
 
 /* Just a little test message.  Go to http://192.168.4.1 in a web browser
@@ -26,13 +29,15 @@ void handleRoot() {
     "<input type=\"submit\">"                    \
 "</form>";
 #endif
-  String ssid = server.arg("ssid"); // 获取用户输入的消息
-  Serial.println(ssid);
   server.send(200, "text/html", message_root);
 }
 
 // 处理表单提交请求（解析数据）
 void handleFormSubmit() {
+  bool is_update_param = 0;
+  uint8_t cpy_len;
+  uint8_t err_cnt = 1;
+  String response = "";
   // 检查请求方法是否为POST
   if (server.method() != HTTP_POST) {
     server.send(405, "application/json", "{\"success\":false,\"msg\":\"仅支持POST请求\"}");
@@ -48,6 +53,51 @@ void handleFormSubmit() {
   inputData[5] = server.arg("dist");
   inputData[6] = server.arg("led_f_mode");
   inputData[7] = server.arg("led_b_mode");
+
+  //将数据缓存下来
+  cpy_len = inputData[0].length();
+  if (cpy_len > 15)
+    goto OUT;
+  err_cnt ++;
+  memcpy(s_sys_cfg_tmp.wifi_name, inputData[0].c_str(), cpy_len);
+
+  cpy_len = inputData[1].length();
+  if (cpy_len > 9)
+    goto OUT;
+  err_cnt ++;
+  memcpy(s_sys_cfg_tmp.wifi_password, inputData[1].c_str(), cpy_len);
+
+  cpy_len = atoi(inputData[2].c_str());
+  if (cpy_len > 90)
+    goto OUT;
+  err_cnt ++;
+  s_sys_cfg_tmp.scan_angle_left = cpy_len; // 需用c_str()转C风格字符串
+  cpy_len = atoi(inputData[3].c_str());
+  if (cpy_len > 90)
+    goto OUT;
+  err_cnt ++;
+  s_sys_cfg_tmp.scan_angle_right = cpy_len;
+  cpy_len = atoi(inputData[4].c_str());
+  if (cpy_len > 200)
+    goto OUT;
+  err_cnt ++;
+  s_sys_cfg_tmp.scan_speed = cpy_len;
+  cpy_len = atoi(inputData[5].c_str());
+  if (cpy_len > 200)
+    goto OUT;
+  err_cnt ++;
+  s_sys_cfg_tmp.scan_distance = cpy_len;
+  cpy_len = atoi(inputData[6].c_str());
+  if (cpy_len > 5)
+    goto OUT;
+  err_cnt ++;
+  s_sys_cfg_tmp.led_f_mode = cpy_len;
+  cpy_len = atoi(inputData[7].c_str());
+  if (cpy_len > 5)
+    goto OUT;
+  err_cnt ++;
+  s_sys_cfg_tmp.led_b_mode = cpy_len;
+
   // ========== 核心：处理数据（根据你的需求修改） ==========
   // 示例1：打印到串口（调试用）
   Serial.println("===== 接收到表单数据 =====");
@@ -55,19 +105,18 @@ void handleFormSubmit() {
     Serial.printf("input%d:%s\n", i, inputData[i].c_str());
   }
 
-  // 示例2：控制外设（比如根据数据控制LED）
-  // if (inputData[0] == "on") digitalWrite(2, HIGH); // 2号引脚亮LED
-  // if (inputData[0] == "off") digitalWrite(2, LOW);  // 2号引脚灭LED
-
-  // 示例3：存储到Flash（需安装Preferences库）
-  // Preferences prefs;
-  // prefs.begin("formData", false);
-  // prefs.putString("msg0", inputData[0]);
-  // prefs.end();
-
+OUT:
   // 返回成功响应给前端
-  String response = "{\"success\":true,\"msg\":\"数据接收成功\",\"data\":\"" + 
+  if (err_cnt < 9)
+  {
+    inputData[0] = err_cnt;
+    response = "{\"success\":false,\"data\":\"" +
+                    inputData[0]+ "\"}";
+  }
+  else{
+    response = "{\"success\":true,\"msg\":\"数据接收成功\",\"data\":\"" +
                     inputData[0] + "," + inputData[1] + "," + inputData[2] + "\"}";
+  }
   server.send(200, "application/json", response);
 }
 

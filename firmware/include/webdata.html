@@ -42,34 +42,82 @@
     <div class="form-container">
         <form id="myForm">
             <label for="ssid">wifi名称：</label>
-            <input type="text" id="ssid" name="ssid" placeholder="请输入wifi名称">
+            <input 
+                    type="text" 
+                    id="ssid" 
+                    name="ssid" 
+                    placeholder="请输入wifi名称"
+                    onkeydown="return preventInvalidInput(this, 15, event)"
+                    oninput="filterChinese(this)"
+            >
+            <script>
+                // 1. 计算字符串字节数（ASCII=1字节）
+                function getByteLength(str) {
+                    let byteLen = 0;
+                    for (let i = 0; i < str.length; i++) {
+                        const charCode = str.charCodeAt(i);
+                        byteLen += (charCode >= 0 && charCode <= 127) ? 1 : 2;
+                    }
+                    return byteLen;
+                }
+                // 2. 过滤已输入的中文（防止粘贴等绕过keydown的情况）
+                function filterChinese(input) {
+                    // 正则匹配所有中文字符并替换为空
+                    input.value = input.value.replace(/[\u4e00-\u9fa5]/g, '');
+                }
+                // 3. 核心：禁止输入中文 + 超过16字节禁止输入
+                function preventInvalidInput(input, maxByte, event) {
+                    // 允许删除/回退/方向键等基础操作
+                    const allowKeys = [8, 9, 13, 16, 17, 18, 20, 27, 32, 35, 36, 37, 38, 39, 40, 46];
+                    if (allowKeys.includes(event.keyCode) || (event.ctrlKey && event.keyCode === 65)) {
+                        return true;
+                    }
+
+                    // 禁止输入中文（通过键盘码判断）
+                    const char = String.fromCharCode(event.keyCode);
+                    const isChinese = /[\u4e00-\u9fa5]/.test(char);
+                    if (isChinese) {
+                        return false;
+                    }
+                    // 超过16字节禁止输入新字符
+                    const currentByte = getByteLength(input.value);
+                    return currentByte < maxByte;
+                }
+            </script>
 
             <label for="pswd">wifi密码：</label>
-            <input type="text" id="pswd" name="pswd" placeholder="请输入wifi密码">
+            <input 
+                    type="text" 
+                    id="pswd" 
+                    name="pswd" 
+                    placeholder="请输入wifi密码"
+                    onkeydown="return preventInvalidInput(this, 9, event)"
+                    oninput="filterChinese(this)"
+            >
 
             <label for="scan_l">左侧雷达检测角度：°</label>
-            <input type="text" id="scan_l" name="scan_l" placeholder="12">
+            <input type="number" id="scan_l" name="scan_l" placeholder="12">
 
             <label for="scan_r">右侧雷达检测角度：°</label>
-            <input type="text" id="scan_r" name="scan_r" placeholder="12">
+            <input type="number" id="scan_r" name="scan_r" placeholder="12">
 
             <label for="speed">雷达检测速度：km/h</label>
-            <input type="text" id="speed" name="speed" placeholder="50">
+            <input type="number" id="speed" name="speed" placeholder="50">
 
             <label for="dist">雷达检测距离：m</label>
-            <input type="text" id="dist" name="dist" placeholder="25">
+            <input type="number" id="dist" name="dist" placeholder="25">
 
             <br>
             <label for="led_f_mode">前灯模式：</label>
             <!-- select的id与label的for关联，提升可访问性 -->
             <select id="led_f_mode" name="led_f_mode">
                 <!-- disabled + selected：默认提示选项，不可选 -->
-                <option value="0" selected>常亮</option>
-                <option value="1">闪烁</option>
-                <option value="2">闪烁->常亮</option>
-                <option value="3">快闪</option>
+                <option value= 0 selected>常亮</option>
+                <option value= 1 >闪烁</option>
+                <option value= 2 >闪烁->常亮</option>
+                <option value= 3 >快闪</option>
                 <!-- disabled：禁用某个选项 -->
-                <option value="4" disabled>关闭</option>
+                <option value= 4 disabled>关闭</option>
             </select>
             <br>
             <br>
@@ -77,19 +125,19 @@
             <!-- select的id与label的for关联，提升可访问性 -->
             <select id="led_b_mode" name="led_b_mode">
                 <!-- disabled + selected：默认提示选项，不可选 -->
-                <option value="0" selected>常亮</option>
-                <option value="1">闪烁</option>
-                <option value="2">闪烁->常亮</option>
-                <option value="3">呼吸</option>
+                <option value= 0  selected>常亮</option>
+                <option value= 1 >闪烁</option>
+                <option value= 2 >闪烁->常亮</option>
+                <option value= 3 >呼吸</option>
                 <!-- disabled：禁用某个选项 -->
-                <option value="4" disabled>关闭</option>
+                <option value= 4  disabled>关闭</option>
             </select>
             <br>
             <br>
             <input type="button" value="保存" onclick="submitForm()">
-            版本：v0.10 - 2026-03-15 20:35:21 <br>
+            版本：v0.11 - 2026-03-15 22:57:23 <br>
             <div class="link-group">
-            <a href="https://gitee.com/qi1021/BSD_LD2451" target="_blank">github</a>
+            <a href="https://github.com/Lei12139/BSD_LD2451" target="_blank">github</a>
             </div>
             ©1995-2026 lei.qi
         </form>
@@ -110,7 +158,7 @@
                     alert('成功！已接收数据：' + data.data);
                    // form.reset(); // 清空表单
                 } else {
-                    alert('失败：' + data.msg);
+                    alert('失败：第' + data.data + '个参数有误');
                 }
             })
             .catch(error => {
