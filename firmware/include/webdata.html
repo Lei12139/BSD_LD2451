@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BSD_LD2451 </title>
+    <style>
+        /* 外层容器：让表单整体水平居中 */
+        .form-container {
+            width: 100%;
+            max-width: 400px; /* 限制表单最大宽度，适配不同屏幕 */
+            margin: 50px auto; /* 上下间距50px，左右自动（实现水平居中） */
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* 输入框提行 + 样式优化 */
+        form input {
+            display: block;    /* 块级元素，自动提行 */
+            width: 80%;       /* 输入框宽度铺满容器 */
+            margin: 8px 0;     /* 上下间距，区分每个输入框 */
+            padding: 10px;     /* 输入框内边距，提升输入体验 */
+            border: 1px solid #ccc; /* 边框样式 */
+            border-radius: 4px; /* 圆角，更美观 */
+            box-sizing: border-box; /* 防止padding撑大宽度 */
+        }
+
+        /* 提交按钮样式优化 */
+        form input[type="button"] {
+            background-color: #007bff; /* 蓝色背景 */
+            color: white;             /* 白色文字 */
+            border: none;             /* 去掉默认边框 */
+            cursor: pointer;          /* 鼠标悬浮变手型 */
+        }
+
+        form input[type="button"]:hover {
+            background-color: #0056b3; /* 悬浮加深颜色 */
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <form id="myForm">
+            <label for="ssid">wifi名称：</label>
+            <input type="text" id="ssid" name="ssid" placeholder="请输入wifi名称">
+
+            <label for="pswd">wifi密码：</label>
+            <input type="text" id="pswd" name="pswd" placeholder="请输入wifi密码">
+
+            <label for="scan_l">左侧雷达检测角度：°</label>
+            <input type="text" id="scan_l" name="scan_l" placeholder="12">
+
+            <label for="scan_r">右侧雷达检测角度：°</label>
+            <input type="text" id="scan_r" name="scan_r" placeholder="12">
+
+            <label for="speed">雷达检测速度：km/h</label>
+            <input type="text" id="speed" name="speed" placeholder="50">
+
+            <label for="dist">雷达检测距离：m</label>
+            <input type="text" id="dist" name="dist" placeholder="25">
+
+            <br>
+            <label for="led_f_mode">前灯模式：</label>
+            <!-- select的id与label的for关联，提升可访问性 -->
+            <select id="led_f_mode" name="led_f_mode">
+                <!-- disabled + selected：默认提示选项，不可选 -->
+                <option value="0" selected>常亮</option>
+                <option value="1">闪烁</option>
+                <option value="2">闪烁->常亮</option>
+                <option value="3">快闪</option>
+                <!-- disabled：禁用某个选项 -->
+                <option value="4" disabled>关闭</option>
+            </select>
+            <br>
+            <br>
+            <label for="led_b_mode">尾灯模式：</label>
+            <!-- select的id与label的for关联，提升可访问性 -->
+            <select id="led_b_mode" name="led_b_mode">
+                <!-- disabled + selected：默认提示选项，不可选 -->
+                <option value="0" selected>常亮</option>
+                <option value="1">闪烁</option>
+                <option value="2">闪烁->常亮</option>
+                <option value="3">呼吸</option>
+                <!-- disabled：禁用某个选项 -->
+                <option value="4" disabled>关闭</option>
+            </select>
+            <br>
+            <br>
+            <input type="button" value="保存" onclick="submitForm()">
+            版本：v0.10 - 2026-03-15 20:35:21 <br>
+            <div class="link-group">
+            <a href="https://gitee.com/qi1021/BSD_LD2451" target="_blank">github</a>
+            </div>
+            ©1995-2026 lei.qi
+        </form>
+    </div>
+ <script>
+        function submitForm() {
+            // 获取表单数据
+            const form = document.getElementById('myForm');
+            const formData = new FormData(form);
+            // AJAX提交到ESP32的/api/submit路径
+            fetch('/api/submit', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('成功！已接收数据：' + data.data);
+                   // form.reset(); // 清空表单
+                } else {
+                    alert('失败：' + data.msg);
+                }
+            })
+            .catch(error => {
+                alert('错误，请检查网络连接！');
+                console.error('Error:', error);
+            });
+        }
+    </script>
+</body>
+</html>
