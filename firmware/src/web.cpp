@@ -4,6 +4,16 @@
 #include <cstdlib> // atoi需要该头文件
 #include "eeprom_flash.h"
 
+#define SSID_OFFSET   1866
+#define PSWD_OFFSET   4020
+#define ALEFT_OFFSET   4329
+#define ARIGH_OFFSET   4418
+#define SPEED_OFFSET   4624
+#define DIST_OFFSET   4762
+#define LEDF_OFFSET   5090
+#define LEDB_OFFSET   5755
+
+
 extern SYS_CONFIG_T g_sys_cfg;
 static SYS_CONFIG_T s_sys_cfg_tmp = {0};
 ESP8266WebServer server(80);//开启板子的80端口
@@ -122,11 +132,28 @@ OUT:
 
 void web_init()
 {
-    server.on("/",   handleRoot);
-    // 注册路由：处理表单提交
-    server.on("/api/submit", handleFormSubmit);
-    server.begin();
-    Serial.println("HTTP server started");
+  char tmp[20] = {0};
+  uint32_t index;
+  memcpy(message_root + SSID_OFFSET, g_sys_cfg.wifi_name, strlen(g_sys_cfg.wifi_name));
+  index = SSID_OFFSET + strlen(g_sys_cfg.wifi_name);
+  message_root[index] = '\"';
+  
+  memcpy(message_root + PSWD_OFFSET, g_sys_cfg.wifi_password, strlen(g_sys_cfg.wifi_password));
+  index = PSWD_OFFSET + strlen(g_sys_cfg.wifi_password);
+  message_root[index] = '\"';
+
+  // sprintf(message_root + PSWD_OFFSET, "%s"  , g_sys_cfg.wifi_password);
+  // sprintf(message_root + ALEFT_OFFSET, "%d\">"  , g_sys_cfg.scan_angle_left);
+  // sprintf(message_root + ARIGH_OFFSET, "%d\""  , g_sys_cfg.scan_angle_right);
+  // sprintf(message_root + SPEED_OFFSET, "%d\""  , g_sys_cfg.scan_speed);
+  // sprintf(message_root + DIST_OFFSET, "%d\""  , g_sys_cfg.scan_distance);
+  // sprintf(message_root + LEDF_OFFSET, "%d"  , g_sys_cfg.led_f_mode);
+  // sprintf(message_root + LEDB_OFFSET, "%d"  , g_sys_cfg.led_b_mode);
+  server.on("/",   handleRoot);
+  // 注册路由：处理表单提交
+  server.on("/api/submit", handleFormSubmit);
+  server.begin();
+  Serial.println("HTTP server started");
 }
 
 void web_work()
