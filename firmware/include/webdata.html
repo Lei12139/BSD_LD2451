@@ -46,7 +46,7 @@
                     type="text" 
                     id="ssid" 
                     name="ssid" 
-                    placeholder="12345678901234"
+                    placeholder="12345678901233"
                     onkeydown="return preventInvalidInput(this, 15, event)"
                     oninput="filterChinese(this)"
             >
@@ -108,14 +108,23 @@
             <input type="number" id="dist" name="dist" placeholder="25">
 
             <br>
+            <label for="b_ang">正后方预警角度：°</label>
+            <input type="number" id="b_ang" name="b_ang" placeholder="5">
+            <label for="b_speed">正后方预警速度：km/h</label>
+            <input type="number" id="b_speed" name="b_speed" placeholder="25">
+            <label for="b_dist">正后方预警距离：m</label>
+            <input type="number" id="b_dist" name="b_dist" placeholder="25">
+
+
+            <br>
             <label for="led_f_mode">前灯模式：</label>
             <!-- select的id与label的for关联，提升可访问性 -->
             <select id="led_f_mode" name="led_f_mode">
                 <!-- disabled + selected：默认提示选项，不可选 -->
                 <option value= 0 selected>常亮</option>
-                <option value= 1 >闪烁</option>
-                <option value= 2 >闪烁->常亮</option>
-                <option value= 3 >快闪</option>
+                <option value= 1         >闪烁</option>
+                <option value= 2         >闪烁->常亮</option>
+                <option value= 3         >快闪</option>
                 <!-- disabled：禁用某个选项 -->
                 <option value= 4 disabled>关闭</option>
             </select>
@@ -126,9 +135,9 @@
             <select id="led_b_mode" name="led_b_mode">
                 <!-- disabled + selected：默认提示选项，不可选 -->
                 <option value= 0  selected>常亮</option>
-                <option value= 1 >闪烁</option>
-                <option value= 2 >闪烁->常亮</option>
-                <option value= 3 >呼吸</option>
+                <option value= 1         >闪烁</option>
+                <option value= 2         >闪烁->常亮</option>
+                <option value= 3         >呼吸</option>
                 <!-- disabled：禁用某个选项 -->
                 <option value= 4  disabled>关闭</option>
             </select>

@@ -35,7 +35,7 @@ def bin_to_h(bin_file_path=".\include\webdata.html", h_file_path=".\include\webd
         h_content.append(f"#define {array_name.upper()}_LEN {len(bin_data)}\n")
          
         # 二进制数据数组（十六进制格式，每行16个元素）
-        h_content.append(f"const char {array_name}[] = {{")
+        h_content.append(f"char {array_name}[] = {{")
         for i, byte in enumerate(bin_data):
             # 每16个字节换行，增加可读性
             if i % 16 == 0:

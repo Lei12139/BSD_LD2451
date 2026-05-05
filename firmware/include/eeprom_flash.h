@@ -43,7 +43,6 @@ typedef struct
 
 class eeprom_flash{
     public:
-
     void data_init(SYS_CONFIG_T *sys_cfg);//数据初始化
     void read_all_data(SYS_CONFIG_T *sys_cfg);//读取所有数据
     void write(int add,uint8_t dat);//写一个字节
@@ -53,17 +52,10 @@ class eeprom_flash{
 
     uint8_t write_flg = 0;
     uint8_t write_t = 21;
-
 };
-
-
-
 
 extern eeprom_flash eeprom;
 
-
-
-
-
+#define SYS_CONFIG_LEN  (sizeof(SYS_CONFIG_T))
 
 #endif
