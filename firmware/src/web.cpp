@@ -4,27 +4,32 @@
 #include <cstdlib> // atoi需要该头文件
 #include "eeprom_flash.h"
 
-#define SSID_OFFSET 1866
-#define PSWD_OFFSET 4020
-#define ALEFT_OFFSET 4329
-#define ARIGH_OFFSET 4480
-#define SPEED_OFFSET 4624
-#define DIST_OFFSET 4762
+#define SSID_OFFSET 1818
+#define PSWD_OFFSET 3928
+#define ALEFT_OFFSET 4231
+#define ARIGH_OFFSET 4379
+#define SPEED_OFFSET 4520
+#define DIST_OFFSET 4655
+#define B_ANG_OFFSET 4814
+#define B_SPEED_OFFSET 4963
+#define B_DIST_OFFSET 5106
 
-#define LEDF_OFFSET_0 5092
-#define LEDF_OFFSET_1 5151
-#define LEDF_OFFSET_2 5210
-#define LEDF_OFFSET_3 5277
-#define LEDB_OFFSET_0 5782
-#define LEDB_OFFSET_1 5841
-#define LEDB_OFFSET_2 5900
-#define LEDB_OFFSET_3 5967
+#define LEDF_OFFSET_0 5430
+#define LEDF_OFFSET_1 5488
+#define LEDF_OFFSET_2 5546
+#define LEDF_OFFSET_3 5612
+#define LEDB_OFFSET_0 6106
+#define LEDB_OFFSET_1 6164
+#define LEDB_OFFSET_2 6222
+#define LEDB_OFFSET_3 6288
+
+#define PARAMETER_CNT 11
 
 extern SYS_CONFIG_T g_sys_cfg;
 static SYS_CONFIG_T s_sys_cfg_tmp = {0};
 ESP8266WebServer server(80); // 开启板子的80端口
 // 存储表单提交的数据（示例：6个输入框的数据）
-String inputData[8] = {"", "", "", "", "", "", "", ""};
+String inputData[PARAMETER_CNT] = {"", "", "", "", "", "", "", "", "", "", ""};
 static const uint32_t ledf_point[4] = {LEDF_OFFSET_0, LEDF_OFFSET_1, LEDF_OFFSET_2, LEDF_OFFSET_3};
 static const uint32_t ledb_point[4] = {LEDB_OFFSET_0, LEDB_OFFSET_1, LEDB_OFFSET_2, LEDB_OFFSET_3};
 
@@ -53,7 +58,7 @@ void handleFormSubmit()
     return;
   }
 
-  // 解析表单数据（对应前端6个输入框）
+  // 解析表单数据（对应前端11个输入框）
   inputData[0] = server.arg("ssid"); // 第一个输入框
   inputData[1] = server.arg("pswd"); // 第二个输入框
   inputData[2] = server.arg("scan_l");
@@ -62,6 +67,9 @@ void handleFormSubmit()
   inputData[5] = server.arg("dist");
   inputData[6] = server.arg("led_f_mode");
   inputData[7] = server.arg("led_b_mode");
+  inputData[8] = server.arg("b_ang");
+  inputData[9] = server.arg("b_speed");
+  inputData[10] = server.arg("b_dist");
   memcpy(&s_sys_cfg_tmp, &g_sys_cfg, SYS_CONFIG_LEN);
   // 将数据缓存下来
   cpy_len = inputData[0].length();
@@ -119,10 +127,31 @@ void handleFormSubmit()
     err_cnt++;
     s_sys_cfg_tmp.led_b_mode = cpy_len;
   }
+
+  cpy_len = atoi(inputData[8].c_str());
+  if ((cpy_len > 0) && (cpy_len <= 99))
+  {
+    err_cnt++;
+    s_sys_cfg_tmp.b_ang = cpy_len;
+  }
+
+  cpy_len = atoi(inputData[9].c_str());
+  if ((cpy_len > 0) && (cpy_len <= 99))
+  {
+    err_cnt++;
+    s_sys_cfg_tmp.b_speed = cpy_len;
+  }
+
+  cpy_len = atoi(inputData[10].c_str());
+  if ((cpy_len > 0) && (cpy_len <= 99))
+  {
+    err_cnt++;
+    s_sys_cfg_tmp.b_dist = cpy_len;
+  }
   // ========== 核心：处理数据（根据你的需求修改） ==========
   // 示例1：打印到串口（调试用）
   Serial.println("===== 接收到表单数据 =====");
-  for (int i = 0; i < 8; i++)
+  for (int i = 0; i < PARAMETER_CNT; i++)
   {
     Serial.printf("input%d:%s\n", i, inputData[i].c_str());
   }
@@ -188,6 +217,21 @@ void webdata_update(SYS_CONFIG_T *sys_cfg)
   len = sprintf(tmp, "%d", sys_cfg->scan_distance);
   memcpy(message_root + DIST_OFFSET, tmp, len);
   index = DIST_OFFSET + len;
+  message_root[index] = '\"';
+
+  len = sprintf(tmp, "%d", sys_cfg->b_ang);
+  memcpy(message_root + B_ANG_OFFSET, tmp, len);
+  index = B_ANG_OFFSET + len;
+  message_root[index] = '\"';
+
+  len = sprintf(tmp, "%d", sys_cfg->b_speed);
+  memcpy(message_root + B_SPEED_OFFSET, tmp, len);
+  index = B_SPEED_OFFSET + len;
+  message_root[index] = '\"';
+
+  len = sprintf(tmp, "%d", sys_cfg->b_dist);
+  memcpy(message_root + B_DIST_OFFSET, tmp, len);
+  index = B_DIST_OFFSET + len;
   message_root[index] = '\"';
 
   for (int i = 0; i < 4; i++)
