@@ -171,6 +171,11 @@ void handleFormSubmit()
   server.send(200, "application/json", response);
 
   webdata_update(&s_sys_cfg_tmp);
+  if (memcmp(&g_sys_cfg, &s_sys_cfg_tmp, SYS_CONFIG_LEN))
+  {
+    memcpy(&g_sys_cfg, &s_sys_cfg_tmp, SYS_CONFIG_LEN);
+    eeprom.para_save(&g_sys_cfg);
+  }
   char buffer[40];
   Serial.println(s_sys_cfg_tmp.wifi_name);
   Serial.println(s_sys_cfg_tmp.wifi_password);

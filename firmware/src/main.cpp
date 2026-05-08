@@ -11,7 +11,7 @@ Ticker ticker_1s;   // 建立Ticker用于实现定时功能
 Ticker ticker_20ms; // 建立Ticker用于实现定时功能
 Ticker ticker_5min; // 建立Ticker用于实现定时功能
 
-SYS_CONFIG_T g_sys_cfg = {0};
+SYS_CONFIG_T g_sys_cfg;
 int tick_cnt;
 int is_wifi_on;
 // 亮灯任务
@@ -46,7 +46,7 @@ void setup()
   Serial.println();
 
   // eeprom init
-  eeprom.read_all_data(&g_sys_cfg);
+  eeprom.load_all_para(&g_sys_cfg);
 
   // WiFi热点初始化
   Serial.print("Configuring access point:");
